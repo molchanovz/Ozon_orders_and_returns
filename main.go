@@ -2,14 +2,21 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
 	"strconv"
 	"time"
 )
 
 func main() {
 	var Client_Id, Api_Key string
-	Client_Id = "259267"
-	Api_Key = "451952b2-a29b-4f7e-819e-3fd96f580fbc"
+	Client_Id, err := initEnv("variables.env", "Client_Id")
+	Api_Key, err = initEnv("variables.env", "Api_Key")
+	if err != nil {
+		log.Panic(err)
+	}
+
 	writeToGoogleSheets(Client_Id, Api_Key)
 }
 
@@ -152,4 +159,18 @@ func date_parser(date string) time.Time {
 		return time.Time{}
 	}
 	return parsedTime
+}
+func initEnv(path, name string) (string, error) {
+	err := godotenv.Load(path)
+	if err != nil {
+		log.Printf("Ошибка загрузки файла %s: %v\n", path, err)
+		return "", fmt.Errorf("ошибка загрузки файла " + path)
+	}
+	// Получаем значения переменных среды
+	env := os.Getenv(name)
+
+	if env == "" {
+		return "", fmt.Errorf("переменная среды " + name + " не установлена")
+	}
+	return env, err
 }
